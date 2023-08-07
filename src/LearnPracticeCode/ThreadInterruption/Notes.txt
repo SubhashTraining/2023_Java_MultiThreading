@@ -1,0 +1,229 @@
+We know the threads consume resources, even when the thread is not doing
+
+anything, it's still consuming memory and some kernel resources.
+
+And obviously when it's running, it's also consuming CPU time
+
+and some space in the CPU.
+
+Cassius.
+
+So if we creating a thread that already finished its work, but the
+
+application is still running, we would like to clean up those resources
+
+consumed by that unused thread.
+
+Another reason we would want to stop a thread is misbehaving in any way.
+
+It's fine possible that it's sending a request to a server that is not responding
+
+or simply transfer very long calculation, much longer than we want to allow it.
+
+The last reason we may want to stop a thread is if we want to stop or close
+
+the entire application by default, as long as we have at least one thread
+
+running, the application will not end.
+
+Even if the main thread already stopped running.
+
+So we want the ability to stop all the threads gracefully
+
+before closing the application.
+
+So let's start with the first method, which is the thread interrupt.
+
+Each thread object has a method called interrupt.
+
+If we're executing from thread a, we can send an interrupt signal to
+
+thread B as an attempt to interrupt.
+
+We can use that the thread, that interrupt method into scenarios.
+
+The first one, if the thread we're trying to interrupt is currently executing
+
+a method which throws an interrupted exception when it gets interrupted.
+
+We'll see a few examples of such methods that throw this exception.
+
+Number two is if the thread we're trying to interrupt is handling the
+
+interrupt signal explicitly, let's explore those scenarios and practice.
+
+In this first example, let's create a class that implements
+
+runnable and call it blocking task.
+
+As the name in place, it's going to run some tasks that involve
+
+blocking them in the wrong time.
+
+You're going to call the sleep method and make it sleep for a very long time.
+
+As we can see the sleep method is explicitly declared the third one,
+
+interrupted exception, which went throne.
+
+We're forced to handle that exception is going to be thrown when the current
+
+thread is interrupted externally.
+
+So let's handle the exception by printing out that we're exiting the
+
+blocking thread and simply return that, which will also end the thread.
+
+That's executing this runnable.
+
+So let's try it out by creating a thread which runs this blocking
+
+tasks and start this thread.
+
+Now, if we were run down application, we see the day entire app is waiting
+
+on that blogging thread to finish.
+
+And that is despite the fact that the main threat is already a long gone.
+
+So to stop that blocking thread, we call the thread dot interrupt method.
+
+And when we run the application, we see that an interrupted exception is
+
+in the throne and the application ends.
+
+In the second example, we're going to create another runnable that runs
+
+along computation, which we will schedule on a new thread in this class.
+
+We're going to calculate a number to a given power.
+
+So let's implement the power method, which takes the base and the power.
+
+And in the method, we will raise that base number to that given power.
+
+In the method body, we simply declare our result and initialize it to one.
+
+Then we eat a rate from zero to the value of the given power.
+
+And in each of the ration, we calculate the newer result as the current
+
+result from the previous iteration multiplied by the base in the end.
+
+And we simply return the result.
+
+Now let's declare the base and the power is private members in the class
+
+and pass them into the constructor.
+
+And in the run method, we simply calculate that base to a given
+
+power and print the results.
+
+Now let's test this.
+
+So in the main method, let's create a thread which will execute our
+
+long computation runnable, and let's calculate two to the power of 10.
+
+And this we expected.
+
+The result is 1,024.
+
+Now, if we pass in very large numbers and rerun the program, we see
+
+that the calculation is definitely going to take us a very long time.
+
+So if the user gave us such big numbers, we will have to either wait for that.
+
+Culturalization to be done or interrupt that thread in order
+
+to finish the application.
+
+However, in this case, just calling the thread, that interrupt is
+
+not enough because we can see the interrupt a scent, but we do not have
+
+any method or logic to handle it.
+
+So that long computation thread is still running.
+
+To solve this problem.
+
+We need to find the hot spot in our code that is taking a long time in our case,
+
+it's obviously inside this four loop.
+
+So what we need to do is to add an if statement in each iteration that checks,
+
+if the current thread got interrupted from the outside world, the way to do it is
+
+to call the, is interrupted, did method.
+
+If it the returns true, then we know that we need to stop the
+
+calculation and exit from the thread.
+
+So let's try it out.
+
+And as we can see, the thread is prematurely interrupted and
+
+the application is terminated.
+
+Now let's talk about Damon threads.
+
+Damon threads are threads that run in the background and do not
+
+prevent our application from exiting.
+
+If the main thread terminates a few scenarios, when we want to
+
+create our threads as Damon or some background tasks that are not
+
+the main focus of the application.
+
+For example, in the text editor application, we have a thread that saves
+
+our work every few minutes to a file.
+
+If suddenly we want to close our application, we don't really care that
+
+this background thread is still running and we don't want wait for it to finish.
+
+A second scenario is when we do not have control over the code, being
+
+executed in the worker thread.
+
+And we want to make sure that it will not become a blocker for us to stop the app.
+
+A good example of such a case can be some code.
+
+That's calling some external libraries that might not
+
+handle the threat interrupt.
+
+So if we go back act or a previous example, if we don't think that we
+
+need to handle the thread interruption gracefully, then we can simply set the
+
+Daymond property of the threat to true.
+
+And if we were on the program again, We see that even though the long
+
+calculation has not finished, just the fact that the main thread ended
+
+makes the entire app terminate in this lecture about thread coordination.
+
+We'll learn how to stop a thread gracefully by calling
+
+the thread interrupt method.
+
+We'll learn that if we're not using methods that explicitly respond to
+
+the interrupt signal by throwing the interrupted exception, we have to check
+
+for that signal and handle it ourselves.
+
+We also learn how to set up threads to not block our application from exiting,
+
+by setting them as Damon threads.
